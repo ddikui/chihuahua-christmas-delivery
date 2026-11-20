@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>산타 치와와의 크리스마스 선물 배달 작전! 🎄🐾</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    body {
+      background: radial-gradient(circle at 50% 30%, #151c38 0%, #080c18 100%);
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      padding: 12px;
+    }
+    .game-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 820px;
+      background: #0d1222;
+      border-radius: 20px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(99, 179, 237, 0.15);
+      border: 2px solid rgba(255, 255, 255, 0.12);
+      overflow: hidden;
+    }
+    .game-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 18px;
+      background: rgba(18, 26, 48, 0.9);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 14px;
+    }
+    .title-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 15px;
+      color: #ffccd5;
+      text-shadow: 0 2px 8px rgba(255, 100, 130, 0.5);
+    }
+    .stats-bar {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    .stat-pill {
+      background: rgba(255, 255, 255, 0.07);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .stat-pill.heart {
+      color: #ff5e7e;
+    }
+    .stat-pill.gold {
+      color: #ffd166;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: #090e1a;
+      aspect-ratio: 16 / 9;
+      cursor: pointer;
+    }
+    .controls-panel {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 18px;
+      background: rgba(18, 26, 48, 0.95);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      gap: 10px;
+    }
+    .instructions {
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.4;
+    }
+    .instructions kbd {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-family: inherit;
+      color: #fff;
+      font-size: 11px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .touch-btns {
+      display: flex;
+      gap: 10px;
+    }
+    .game-btn {
+      background: linear-gradient(135deg, #e63946 0%, #c1121f 100%);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(230, 57, 70, 0.4);
+      transition: all 0.15s ease;
+      touch-action: manipulation;
+    }
+    .game-btn:active {
+      transform: scale(0.94);
+      box-shadow: 0 2px 6px rgba(230, 57, 70, 0.3);
+    }
+    .game-btn.gift-btn {
+      background: linear-gradient(135deg, #2a9d8f 0%, #1e6b62 100%);
+      box-shadow: 0 4px 12px rgba(42, 157, 143, 0.4);
+    }
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      border-radius: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .icon-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="game-wrapper">
+    <!-- 헤더 바 -->
+    <div class="game-header">
+      <div class="title-badge">
+        <span>🐾 <b>산타 치와와의 선물 배달</b></span>
+        <button id="soundToggle" class="icon-btn" title="음악/효과음 켜기/끄기">🎵 BGM ON</button>
+      </div>
+      <div class="stats-bar">
+        <div class="stat-pill heart">❤️ <span id="livesDisplay">3</span></div>
+        <div class="stat-pill gold">🎁 배달 <span id="deliveriesDisplay">0</span></div>
+        <div class="stat-pill">✨ 점수 <span id="scoreDisplay">0</span></div>
+      </div>
+    </div>
+
+    <!-- 메인 캔버스 -->
+    <canvas id="gameCanvas" width="800" height="450"></canvas>
+
+    <!-- 하단 조작 바 -->
+    <div class="controls-panel">
+      <div class="instructions">
+        🎮 <b>PC 조작:</b> <kbd>Space</kbd> / <kbd>↑</kbd> 점프(2단 점프) | <kbd>↓</kbd> / <kbd>D</kbd> 선물 던지기<br>
+        🎯 <b>목표:</b> 지붕 위를 달리며 굴뚝 속으로 선물을 쏙 골인시키세요!
+      </div>
+      <div class="touch-btns">
+        <button id="jumpBtn" class="game-btn">🦘 점프</button>
+        <button id="dropBtn" class="game-btn gift-btn">🎁 선물 투하</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- 오디오 시스템 (Web Audio API 기반 BGM & 효과음) ---
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+        this.bgmPlaying = false;
+        this.noteIndex = 0;
+        this.bgmTimer = null;
+
+        // 크리스마스 캐롤 "Jingle Bells" 멜로디 (주파수, 지속시간 단위 8분음표)
+        const N = {
+          C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00, A4: 440.00, B4: 493.88,
+          C5: 523.25, D5: 587.33, E5: 659.25, G3: 196.00, REST: 0
+        };
+        this.jingleBells = [
+          [N.E4, 1], [N.E4, 1], [N.E4, 2],
+          [N.E4, 1], [N.E4, 1], [N.E4, 2],
+          [N.E4, 1], [N.G4, 1], [N.C4, 1.5], [N.D4, 0.5], [N.E4, 3], [N.REST, 1],
+          [N.F4, 1], [N.F4, 1], [N.F4, 1.5], [N.F4, 0.5],
+          [N.F4, 1], [N.E4, 1], [N.E4, 1], [N.E4, 0.5], [N.E4, 0.5],
+          [N.E4, 1], [N.D4, 1], [N.D4, 1], [N.E4, 1], [N.D4, 2], [N.G4, 2],
+          [N.E4, 1], [N.E4, 1], [N.E4, 2],
+          [N.E4, 1], [N.E4, 1], [N.E4, 2],
+          [N.E4, 1], [N.G4, 1], [N.C4, 1.5], [N.D4, 0.5], [N.E4, 3], [N.REST, 1],
+          [N.F4, 1], [N.F4, 1], [N.F4, 1.5], [N.F4, 0.5],
+          [N.F4, 1], [N.E4, 1], [N.E4, 1], [N.E4, 0.5], [N.E4, 0.5],
+          [N.G4, 1], [N.G4, 1], [N.F4, 1], [N.D4, 1], [N.C4, 3], [N.REST, 1]
+        ];
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playJump() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(260, now);
+        osc.frequency.exponentialRampToValueAtTime(650, now + 0.15);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.15);
+      }
+
+      playDoubleJump() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(450, now);
+        osc.frequency.exponentialRampToValueAtTime(900, now + 0.18);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.18);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.18);
+      }
+
+      playDrop() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, now);
+        osc.frequency.exponentialRampToValueAtTime(160, now + 0.12);
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.12);
+      }
+
+      playGoal() {
+        if (!this.enabled || !this.ctx) return;
+        // 크리스마스 징글 차임 벨 소리
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+          const now = this.ctx.currentTime + idx * 0.06;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now);
+          gain.gain.setValueAtTime(0.22, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.36);
+        });
+      }
+
+      playHit() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(140, now);
+        osc.frequency.linearRampToValueAtTime(50, now + 0.2);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.2);
+      }
+
+      playHeal() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const notes = [440, 554, 659, 880];
+        notes.forEach((freq, idx) => {
+          const t = now + idx * 0.05;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, t);
+          gain.gain.setValueAtTime(0.2, t);
+          gain.gain.exponentialRampToValueAtTime(0.01, t + 0.2);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.2);
+        });
+      }
+
+      startBGM() {
+        if (!this.enabled || !this.ctx || this.bgmPlaying) return;
+        this.bgmPlaying = true;
+        this.noteIndex = 0;
+        this.scheduleNextNote();
+      }
+
+      stopBGM() {
+        this.bgmPlaying = false;
+        if (this.bgmTimer) {
+          clearTimeout(this.bgmTimer);
+          this.bgmTimer = null;
+        }
+      }
+
+      scheduleNextNote() {
+        if (!this.bgmPlaying || !this.enabled) return;
+        const beatDuration = 0.24; // 템포 (초 단위)
+        const [freq, duration] = this.jingleBells[this.noteIndex];
+        
+        if (freq > 0 && this.ctx) {
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now);
+
+          // 귀여운 벨 톤 느낌
+          gain.gain.setValueAtTime(0.08, now);
+          gain.gain.exponentialRampToValueAtTime(0.005, now + duration * beatDuration * 0.9);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + duration * beatDuration);
+        }
+
+        this.noteIndex = (this.noteIndex + 1) % this.jingleBells.length;
+        this.bgmTimer = setTimeout(() => {
+          this.scheduleNextNote();
+        }, duration * beatDuration * 1000);
+      }
+
+      toggle() {
+        this.enabled = !this.enabled;
+        if (!this.enabled) {
+          this.stopBGM();
+        } else {
+          this.init();
+          this.startBGM();
+        }
+        return this.enabled;
+      }
+    }
+
+    const sound = new SoundEngine();
+
+    // --- 게임 핵심 엔진 ---
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const livesDisplay = document.getElementById('livesDisplay');
+    const deliveriesDisplay = document.getElementById('deliveriesDisplay');
+    const soundToggle = document.getElementById('soundToggle');
+    const jumpBtn = document.getElementById('jumpBtn');
+    const dropBtn = document.getElementById('dropBtn');
+
+    soundToggle.addEventListener('click', () => {
+      sound.init();
+      const on = sound.toggle();
+      soundToggle.textContent = on ? '🎵 BGM ON' : '🔇 MUTE';
+      soundToggle.style.color = on ? '#fff' : '#94a3b8';
+    });
+
+    // 화면 터치 / 클릭 리스너로 오디오 콘텍스트 활성화
+    const unlockAudio = () => {
+      sound.init();
+      if (sound.enabled && !sound.bgmPlaying) sound.startBGM();
+      window.removeEventListener('keydown', unlockAudio);
+      canvas.removeEventListener('pointerdown', unlockAudio);
+    };
+    window.addEventListener('keydown', unlockAudio);
+    canvas.addEventListener('pointerdown', unlockAudio);
+
+    // 파티클 시스템
+    class Particle {
+      constructor(x, y, vx, vy, color, size, life, type = 'star') {
+        this.x = x;
+        this.y = y;
+        this.vx = vx;
+        this.vy = vy;
+        this.color = color;
+        this.size = size;
+        this.maxLife = life;
+        this.life = life;
+        this.type = type;
+        this.rot = Math.random() * Math.PI * 2;
+        this.vRot = (Math.random() - 0.5) * 0.2;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += 0.05; // 중력
+        this.life--;
+        this.rot += this.vRot;
+      }
+      draw(c) {
+        const alpha = Math.max(0, this.life / this.maxLife);
+        c.save();
+        c.globalAlpha = alpha;
+        c.translate(this.x, this.y);
+        c.rotate(this.rot);
+
+        if (this.type === 'star') {
+          c.fillStyle = this.color;
+          c.beginPath();
+          for (let i = 0; i < 5; i++) {
+            c.lineTo(Math.cos((18 + i * 72) * Math.PI / 180) * this.size, -Math.sin((18 + i * 72) * Math.PI / 180) * this.size);
+            c.lineTo(Math.cos((54 + i * 72) * Math.PI / 180) * (this.size * 0.45), -Math.sin((54 + i * 72) * Math.PI / 180) * (this.size * 0.45));
+          }
+          c.closePath();
+          c.fill();
+        } else if (this.type === 'heart') {
+          c.fillStyle = this.color;
+          c.beginPath();
+          c.arc(-this.size/3, -this.size/3, this.size/2.5, 0, Math.PI * 2);
+          c.arc(this.size/3, -this.size/3, this.size/2.5, 0, Math.PI * 2);
+          c.fill();
+          c.beginPath();
+          c.moveTo(-this.size * 0.8, -this.size * 0.2);
+          c.lineTo(0, this.size * 0.9);
+          c.lineTo(this.size * 0.8, -this.size * 0.2);
+          c.fill();
+        } else {
+          c.fillStyle = this.color;
+          c.beginPath();
+          c.arc(0, 0, this.size, 0, Math.PI * 2);
+          c.fill();
+        }
+        c.restore();
+      }
+    }
+
+    // 부유하는 텍스트 이펙트
+    class FloatText {
+      constructor(text, x, y, color = '#ffd166', size = 20) {
+        this.text = text;
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.size = size;
+        this.life = 45;
+        this.maxLife = 45;
+      }
+      update() {
+        this.y -= 1.2;
+        this.life--;
+      }
+      draw(c) {
+        const alpha = Math.max(0, this.life / this.maxLife);
+        c.save();
+        c.globalAlpha = alpha;
+        c.font = `bold ${this.size}px -apple-system, sans-serif`;
+        c.fillStyle = this.color;
+        c.shadowColor = 'rgba(0,0,0,0.8)';
+        c.shadowBlur = 6;
+        c.textAlign = 'center';
+        c.fillText(this.text, this.x, this.y);
+        c.restore();
+      }
+    }
+
+    // 눈 파티클
+    const snowflakes = [];
+    for (let i = 0; i < 90; i++) {
+      snowflakes.push({
+        x: Math.random() * 800,
+        y: Math.random() * 450,
+        r: Math.random() * 2.5 + 1,
+        speedY: Math.random() * 1.2 + 0.6,
+        speedX: Math.random() * 0.8 - 0.4,
+        opacity: Math.random() * 0.6 + 0.4
+      });
+    }
+
+    // 선물 객체 (치와와가 던지는 선물)
+    class Gift {
+      constructor(x, y, vx, vy) {
+        this.x = x;
+        this.y = y;
+        this.vx = vx;
+        this.vy = vy;
+        this.w = 22;
+        this.h = 22;
+        this.angle = 0;
+        this.active = true;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += 0.35; // 중력 가속도
+        this.angle += 0.08;
+      }
+      draw(c) {
+        c.save();
+        c.translate(this.x, this.y);
+        c.rotate(this.angle);
+
+        // 상자 본체 (빨강 또는 녹색)
+        c.fillStyle = '#e63946';
+        c.fillRect(-this.w/2, -this.h/2, this.w, this.h);
+
+        // 노란 리본 십자
+        c.fillStyle = '#ffd166';
+        c.fillRect(-this.w/2, -3, this.w, 6);
+        c.fillRect(-3, -this.h/2, 6, this.h);
+
+        // 리본 매듭
+        c.beginPath();
+        c.arc(-4, -this.h/2 - 2, 4, 0, Math.PI * 2);
+        c.arc(4, -this.h/2 - 2, 4, 0, Math.PI * 2);
+        c.fill();
+
+        c.restore();
+      }
+    }
+
+    // 게임 상태 객체
+    const game = {
+      state: 'START', // 'START', 'PLAY', 'GAMEOVER'
+      score: 0,
+      deliveries: 0,
+      combo: 0,
+      lives: 3,
+      distance: 0,
+      speed: 4.8,
+      invulnerable: 0,
+      bestScore: parseInt(localStorage.getItem('chihuahua_best_score') || '0', 10),
+
+      // 치와와 캐릭터 상태
+      dog: {
+        x: 140,
+        y: 280,
+        w: 52,
+        h: 46,
+        vy: 0,
+        grounded: false,
+        jumpCount: 0,
+        maxJumps: 2,
+        frame: 0,
+        dropCooldown: 0
+      },
+
+      roofs: [],
+      chimneys: [],
+      obstacles: [],
+      pickups: [],
+      gifts: [],
+      particles: [],
+      floatTexts: [],
+
+      reset() {
+        this.state = 'PLAY';
+        this.score = 0;
+        this.deliveries = 0;
+        this.combo = 0;
+        this.lives = 3;
+        this.distance = 0;
+        this.speed = 4.8;
+        this.invulnerable = 0;
+
+        this.dog.x = 140;
+        this.dog.y = 260;
+        this.dog.vy = 0;
+        this.dog.jumpCount = 0;
+        this.dog.grounded = true;
+        this.dog.dropCooldown = 0;
+
+        this.roofs = [];
+        this.chimneys = [];
+        this.obstacles = [];
+        this.pickups = [];
+        this.gifts = [];
+        this.particles = [];
+        this.floatTexts = [];
+
+        // 초기 지붕들 생성
+        let curX = 0;
+        while (curX < 1200) {
+          const w = Math.random() * 200 + 350;
+          const y = 330;
+          this.createRoof(curX, y, w, false);
+          curX += w + Math.random() * 40 + 30; // 지붕 사이 간격
+        }
+
+        this.updateHUD();
+      },
+
+      createRoof(x, y, w, hasFeatures = true) {
+        this.roofs.push({ x, y, w, h: 140 });
+
+        if (hasFeatures) {
+          // 굴뚝 생성 (선물 배달 목표)
+          const chimneyX = x + Math.random() * (w - 140) + 70;
+          this.chimneys.push({
+            x: chimneyX,
+            y: y - 56,
+            w: 48,
+            h: 56,
+            delivered: false,
+            roofY: y
+          });
+
+          // 장애물 (미니 눈사람) 또는 캔디케인 아이템
+          if (Math.random() < 0.35) {
+            const obsX = x + (Math.random() < 0.5 ? 40 : w - 50);
+            if (Math.abs(obsX - chimneyX) > 60) {
+              this.obstacles.push({
+                x: obsX,
+                y: y - 36,
+                w: 30,
+                h: 36,
+                type: 'snowman'
+              });
+            }
+          } else if (Math.random() < 0.25) {
+            // 하트 회복 아이템 (지팡이 사탕 / 쿠키)
+            this.pickups.push({
+              x: x + w / 2,
+              y: y - 80 - Math.random() * 40,
+              w: 24,
+              h: 24,
+              type: 'candy',
+              bob: Math.random() * Math.PI
+            });
+          }
+        }
+      },
+
+      updateHUD() {
+        scoreDisplay.textContent = Math.floor(this.score);
+        livesDisplay.textContent = this.lives;
+        deliveriesDisplay.textContent = this.deliveries;
+      },
+
+      jump() {
+        if (this.state === 'START' || this.state === 'GAMEOVER') {
+          sound.init();
+          sound.startBGM();
+          this.reset();
+          return;
+        }
+
+        if (this.dog.jumpCount < this.dog.maxJumps) {
+          if (this.dog.jumpCount === 0) {
+            this.dog.vy = -11.5;
+            sound.playJump();
+          } else {
+            this.dog.vy = -10.5;
+            sound.playDoubleJump();
+            // 2단 점프 반짝이
+            for (let i = 0; i < 6; i++) {
+              this.particles.push(new Particle(
+                this.dog.x + this.dog.w/2,
+                this.dog.y + this.dog.h,
+                (Math.random() - 0.5) * 3,
+                Math.random() * 2 + 1,
+                '#ffd166',
+                3,
+                20,
+                'star'
+              ));
+            }
+          }
+          this.dog.jumpCount++;
+          this.dog.grounded = false;
+        }
+      },
+
+      dropGift() {
+        if (this.state !== 'PLAY') return;
+        if (this.dog.dropCooldown > 0) return;
+
+        this.dog.dropCooldown = 18; // 쿨타임
+        sound.playDrop();
+
+        // 치와와 뒤쪽/아래쪽에서 선물 발사
+        const gift = new Gift(
+          this.dog.x + 10,
+          this.dog.y + 25,
+          this.speed * 0.45,
+          1.5
+        );
+        this.gifts.push(gift);
+      },
+
+      takeDamage() {
+        if (this.invulnerable > 0) return;
+        this.lives--;
+        this.invulnerable = 60; // 1초 무적
+        this.combo = 0;
+        sound.playHit();
+
+        // 화면 흔들림 효과
+        this.screenShake = 12;
+
+        this.updateHUD();
+        if (this.lives <= 0) {
+          this.gameOver();
+        }
+      },
+
+      gameOver() {
+        this.state = 'GAMEOVER';
+        if (this.score > this.bestScore) {
+          this.bestScore = Math.floor(this.score);
+          localStorage.setItem('chihuahua_best_score', this.bestScore);
+        }
+      }
+    };
+
+    // 입력 처리
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+        e.preventDefault();
+        game.jump();
+      } else if (e.code === 'ArrowDown' || e.code === 'KeyS' || e.code === 'KeyD') {
+        e.preventDefault();
+        game.dropGift();
+      }
+    });
+
+    jumpBtn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      unlockAudio();
+      game.jump();
+    });
+
+    dropBtn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      unlockAudio();
+      game.dropGift();
+    });
+
+    canvas.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      unlockAudio();
+      const rect = canvas.getBoundingClientRect();
+      const clickX = (e.clientX - rect.left) / rect.width;
+      if (game.state !== 'PLAY') {
+        game.jump();
+      } else {
+        // 화면 오른쪽 35% 클릭 시 선물 투하, 그 외 영역 클릭 시 점프
+        if (clickX > 0.65) {
+          game.dropGift();
+        } else {
+          game.jump();
+        }
+      }
+    });
+
+    // --- 렌더링 헬퍼 함수: 귀여운 산타 치와와 그리기 ---
+    function drawChihuahua(c, x, y, frame, invuln, isJumping) {
+      if (invuln > 0 && Math.floor(invuln / 5) % 2 === 1) {
+        return; // 깜빡임 무적 효과
+      }
+
+      c.save();
+      c.translate(x, y);
+
+      const runCycle = Math.sin(frame * 0.35);
+      const bob = isJumping ? 0 : Math.abs(Math.sin(frame * 0.35)) * 3;
+
+      // 꼬리 (치와와 특유의 솟아오른 둥근 꼬리)
+      c.save();
+      c.translate(4, 24 - bob);
+      c.rotate(runCycle * 0.3 - 0.4);
+      c.fillStyle = '#ddb888';
+      c.beginPath();
+      c.moveTo(0, 0);
+      c.quadraticCurveTo(-14, -8, -10, -18);
+      c.quadraticCurveTo(-4, -14, 0, -4);
+      c.fill();
+      // 꼬리 끝 흰 털
+      c.fillStyle = '#fffaf0';
+      c.beginPath();
+      c.arc(-10, -18, 3.5, 0, Math.PI * 2);
+      c.fill();
+      c.restore();
+
+      // 뒷다리 1
+      c.fillStyle = '#cda16e';
+      c.beginPath();
+      const backLeg1 = isJumping ? 0.4 : runCycle;
+      c.ellipse(12, 38 - bob, 4.5, 7, backLeg1, 0, Math.PI * 2);
+      c.fill();
+
+      // 앞다리 1
+      c.fillStyle = '#cda16e';
+      c.beginPath();
+      const frontLeg1 = isJumping ? -0.4 : -runCycle;
+      c.ellipse(36, 38 - bob, 4.5, 7, frontLeg1, 0, Math.PI * 2);
+      c.fill();
+
+      // 선물 주머니 (등에 맨 산타 보따리)
+      c.fillStyle = '#c1121f';
+      c.beginPath();
+      c.arc(16, 17 - bob, 11, 0, Math.PI * 2);
+      c.fill();
+      // 보따리 주름 및 금색 끈
+      c.fillStyle = '#ffd166';
+      c.fillRect(14, 6 - bob, 4, 3);
+      c.beginPath();
+      c.arc(16, 7 - bob, 5, 0, Math.PI);
+      c.strokeStyle = '#ffd166';
+      c.lineWidth = 1.5;
+      c.stroke();
+
+      // 몸통 (통통하고 앙증맞음)
+      c.fillStyle = '#e8c18c';
+      c.beginPath();
+      c.ellipse(24, 25 - bob, 16, 12, 0.1, 0, Math.PI * 2);
+      c.fill();
+
+      // 목걸이 (크리스마스 초록 리본과 금색 방울)
+      c.fillStyle = '#2a9d8f';
+      c.fillRect(31, 19 - bob, 6, 7);
+      c.fillStyle = '#ffd166';
+      c.beginPath();
+      c.arc(34, 27 - bob, 3.5, 0, Math.PI * 2);
+      c.fill();
+
+      // 뒷다리 2 (가까운 쪽)
+      c.fillStyle = '#e8c18c';
+      c.beginPath();
+      c.ellipse(16, 40 - bob, 5, 8, -runCycle * 0.9, 0, Math.PI * 2);
+      c.fill();
+
+      // 앞다리 2 (가까운 쪽)
+      c.fillStyle = '#e8c18c';
+      c.beginPath();
+      c.ellipse(34, 40 - bob, 5, 8, runCycle * 0.9, 0, Math.PI * 2);
+      c.fill();
+
+      // 머리 (동글동글)
+      c.fillStyle = '#e8c18c';
+      c.beginPath();
+      c.arc(38, 14 - bob, 13, 0, Math.PI * 2);
+      c.fill();
+
+      // 치와와 특유의 커다랗고 쫑긋한 귀 (뒤쪽 귀)
+      c.fillStyle = '#ddb888';
+      c.beginPath();
+      c.moveTo(33, 5 - bob);
+      c.lineTo(26, -11 - bob);
+      c.lineTo(40, -1 - bob);
+      c.closePath();
+      c.fill();
+      // 귀 안쪽 분홍색
+      c.fillStyle = '#f4a6b2';
+      c.beginPath();
+      c.moveTo(34, 4 - bob);
+      c.lineTo(28, -8 - bob);
+      c.lineTo(39, 0 - bob);
+      c.closePath();
+      c.fill();
+
+      // 치와와 앞쪽 귀 (크고 귀여움)
+      c.fillStyle = '#e8c18c';
+      c.beginPath();
+      c.moveTo(42, 6 - bob);
+      c.lineTo(46, -12 - bob);
+      c.lineTo(52, 4 - bob);
+      c.closePath();
+      c.fill();
+      // 귀 안쪽
+      c.fillStyle = '#f9b5c0';
+      c.beginPath();
+      c.moveTo(44, 5 - bob);
+      c.lineTo(47, -9 - bob);
+      c.lineTo(50, 4 - bob);
+      c.closePath();
+      c.fill();
+
+      // 산타 모자 (머리 위에 얹음)
+      c.save();
+      c.translate(36, 6 - bob);
+      c.rotate(-0.25);
+      // 모자 본체
+      c.fillStyle = '#e63946';
+      c.beginPath();
+      c.moveTo(-10, 0);
+      c.lineTo(-2, -18);
+      c.lineTo(12, 0);
+      c.closePath();
+      c.fill();
+      // 흰 털 테두리
+      c.fillStyle = '#ffffff';
+      c.beginPath();
+      c.ellipse(1, 0, 12, 3.5, 0, 0, Math.PI * 2);
+      c.fill();
+      // 모자 끝 하얀 방울
+      c.beginPath();
+      c.arc(-2, -18, 4.5, 0, Math.PI * 2);
+      c.fill();
+      c.restore();
+
+      // 치와와 눈 (커다랗고 똘망똘망한 검은 눈동자)
+      c.fillStyle = '#1e110b';
+      c.beginPath();
+      c.ellipse(43, 13 - bob, 4.2, 5, 0, 0, Math.PI * 2);
+      c.fill();
+      // 눈동자 하이라이트 반짝임 (2개)
+      c.fillStyle = '#ffffff';
+      c.beginPath();
+      c.arc(42, 11 - bob, 1.6, 0, Math.PI * 2);
+      c.arc(44.5, 14.5 - bob, 0.9, 0, Math.PI * 2);
+      c.fill();
+
+      // 분홍 볼터치
+      c.fillStyle = 'rgba(255, 140, 160, 0.55)';
+      c.beginPath();
+      c.arc(41, 18 - bob, 3, 0, Math.PI * 2);
+      c.fill();
+
+      // 주둥이와 코
+      c.fillStyle = '#e2b57e';
+      c.beginPath();
+      c.ellipse(48, 17 - bob, 4.5, 3.5, 0, 0, Math.PI * 2);
+      c.fill();
+      // 까만 코
+      c.fillStyle = '#221109';
+      c.beginPath();
+      c.arc(51, 16 - bob, 1.8, 0, Math.PI * 2);
+      c.fill();
+      // 미소 입
+      c.strokeStyle = '#221109';
+      c.lineWidth = 1.2;
+      c.beginPath();
+      c.arc(49, 17.5 - bob, 2.5, 0.1, Math.PI * 0.7);
+      c.stroke();
+
+      c.restore();
+    }
+
+    // 눈사람 그리기
+    function drawSnowman(c, x, y) {
+      c.save();
+      c.translate(x, y);
+
+      // 아래 눈덩이
+      c.fillStyle = '#edf2f7';
+      c.beginPath();
+      c.arc(15, 24, 13, 0, Math.PI * 2);
+      c.fill();
+
+      // 위 눈덩이
+      c.beginPath();
+      c.arc(15, 9, 9, 0, Math.PI * 2);
+      c.fill();
+
+      // 눈사람 눈
+      c.fillStyle = '#1a202c';
+      c.beginPath();
+      c.arc(12, 7, 1.5, 0, Math.PI * 2);
+      c.arc(17, 7, 1.5, 0, Math.PI * 2);
+      c.fill();
+
+      // 주황 당근 코
+      c.fillStyle = '#f77f00';
+      c.beginPath();
+      c.moveTo(14, 9);
+      c.lineTo(19, 10);
+      c.lineTo(14, 11);
+      c.fill();
+
+      // 빨간 목도리
+      c.fillStyle = '#e63946';
+      c.fillRect(8, 14, 14, 4);
+      c.fillRect(17, 16, 4, 8);
+
+      c.restore();
+    }
+
+    // 굴뚝 그리기
+    function drawChimney(c, chim) {
+      c.save();
+      c.translate(chim.x, chim.y);
+
+      // 벽돌 기둥
+      c.fillStyle = '#8b263e';
+      c.fillRect(0, 8, chim.w, chim.h - 8);
+
+      // 벽돌 패턴 선
+      c.strokeStyle = 'rgba(0, 0, 0, 0.25)';
+      c.lineWidth = 1.5;
+      c.beginPath();
+      c.moveTo(0, 22); c.lineTo(chim.w, 22);
+      c.moveTo(0, 36); c.lineTo(chim.w, 36);
+      c.moveTo(chim.w/2, 8); c.lineTo(chim.w/2, 22);
+      c.moveTo(chim.w/4, 22); c.lineTo(chim.w/4, 36);
+      c.moveTo(chim.w*0.75, 22); c.lineTo(chim.w*0.75, 36);
+      c.stroke();
+
+      // 눈 덮인 테두리 상단
+      c.fillStyle = '#ffffff';
+      c.beginPath();
+      c.roundRect(-4, 0, chim.w + 8, 12, 4);
+      c.fill();
+
+      // 굴뚝 구멍
+      c.fillStyle = '#1c1015';
+      c.beginPath();
+      c.ellipse(chim.w / 2, 6, chim.w / 2 - 2, 4, 0, 0, Math.PI * 2);
+      c.fill();
+
+      // 연기 피어오름
+      if (Math.random() < 0.15) {
+        game.particles.push(new Particle(
+          chim.x + chim.w/2 + (Math.random() - 0.5) * 8,
+          chim.y + 2,
+          (Math.random() - 0.5) * 0.4 + 0.3,
+          -Math.random() * 0.9 - 0.5,
+          'rgba(240, 240, 255, 0.65)',
+          Math.random() * 4 + 4,
+          50,
+          'smoke'
+        ));
+      }
+
+      // 배달 성공 리본 장식 표시
+      if (chim.delivered) {
+        c.fillStyle = '#ffd166';
+        c.font = 'bold 16px -apple-system, sans-serif';
+        c.textAlign = 'center';
+        c.fillText('⭐ 배달완료!', chim.w / 2, -10);
+      } else {
+        // 목표 유도 화살표
+        c.fillStyle = '#ffd166';
+        c.beginPath();
+        const bounce = Math.sin(Date.now() * 0.008) * 3;
+        c.moveTo(chim.w / 2, -18 + bounce);
+        c.lineTo(chim.w / 2 - 6, -26 + bounce);
+        c.lineTo(chim.w / 2 + 6, -26 + bounce);
+        c.fill();
+      }
+
+      c.restore();
+    }
+
+    // 메인 루프
+    let lastTime = performance.now();
+
+    function loop(now) {
+      requestAnimationFrame(loop);
+      const dt = Math.min((now - lastTime) / 1000, 0.1);
+      lastTime = now;
+
+      // 업데이트
+      if (game.state === 'PLAY') {
+        game.distance += game.speed;
+        game.score += game.speed * 0.05; // 달리는 거리 기반 점수
+        game.speed = Math.min(8.5, 4.8 + (game.distance / 3500)); // 점진적 가속
+
+        if (game.dog.dropCooldown > 0) game.dog.dropCooldown--;
+        if (game.invulnerable > 0) game.invulnerable--;
+
+        // 치와와 물리
+        game.dog.frame++;
+        game.dog.vy += 0.55; // 중력
+        game.dog.y += game.dog.vy;
+
+        // 지붕 착지 판정
+        game.dog.grounded = false;
+        const dogBottom = game.dog.y + game.dog.h;
+        const dogFeetX = game.dog.x + game.dog.w * 0.5;
+
+        for (const roof of game.roofs) {
+          if (dogFeetX >= roof.x && dogFeetX <= roof.x + roof.w) {
+            if (dogBottom >= roof.y && dogBottom <= roof.y + 18 && game.dog.vy >= 0) {
+              game.dog.y = roof.y - game.dog.h;
+              game.dog.vy = 0;
+              game.dog.grounded = true;
+              game.dog.jumpCount = 0;
+              break;
+            }
+          }
+        }
+
+        // 지붕 아래로 추락 처리 (하트 1개 잃고 리스폰 점프)
+        if (game.dog.y > 450) {
+          game.takeDamage();
+          game.dog.y = 180;
+          game.dog.vy = -6;
+        }
+
+        // 지붕 & 객체 스크롤
+        for (const roof of game.roofs) roof.x -= game.speed;
+        for (const chim of game.chimneys) chim.x -= game.speed;
+        for (const obs of game.obstacles) obs.x -= game.speed;
+        for (const p of game.pickups) p.x -= game.speed;
+
+        // 새로운 지붕 생성
+        const lastRoof = game.roofs[game.roofs.length - 1];
+        if (lastRoof && lastRoof.x + lastRoof.w < 900) {
+          const w = Math.random() * 200 + 320;
+          const y = Math.min(360, Math.max(260, lastRoof.y + (Math.random() - 0.5) * 60));
+          const gap = Math.random() * 50 + 40;
+          game.createRoof(lastRoof.x + lastRoof.w + gap, y, w, true);
+        }
+
+        // 화면 밖 객체 제거
+        game.roofs = game.roofs.filter(r => r.x + r.w > -100);
+        game.chimneys = game.chimneys.filter(c => c.x > -100);
+        game.obstacles = game.obstacles.filter(o => o.x > -100);
+        game.pickups = game.pickups.filter(p => p.x > -100);
+
+        // 선물 물리 및 굴뚝 골인 충돌 판정
+        for (let i = game.gifts.length - 1; i >= 0; i--) {
+          const g = game.gifts[i];
+          g.update();
+
+          // 굴뚝 배달 판정
+          for (const chim of game.chimneys) {
+            if (!chim.delivered && g.x >= chim.x && g.x <= chim.x + chim.w &&
+                g.y >= chim.y && g.y <= chim.y + chim.h * 0.6) {
+              // 골인!
+              chim.delivered = true;
+              g.active = false;
+              game.deliveries++;
+              game.combo++;
+
+              const comboBonus = game.combo > 1 ? ` COMBO x${game.combo}!` : '';
+              const pts = 200 * (1 + (game.combo - 1) * 0.5);
+              game.score += pts;
+
+              sound.playGoal();
+
+              // 파티클 폭발
+              for (let p = 0; p < 24; p++) {
+                const colors = ['#ffd166', '#e63946', '#06d6a0', '#ffffff', '#ff9ebb'];
+                game.particles.push(new Particle(
+                  chim.x + chim.w / 2,
+                  chim.y,
+                  (Math.random() - 0.5) * 6,
+                  -Math.random() * 5 - 2,
+                  colors[p % colors.length],
+                  Math.random() * 4 + 3,
+                  40,
+                  p % 3 === 0 ? 'heart' : 'star'
+                ));
+              }
+
+              game.floatTexts.push(new FloatText(`+${pts}${comboBonus}`, chim.x + chim.w/2, chim.y - 10, '#ffd166', 22));
+              break;
+            }
+          }
+
+          // 지붕 또는 바닥 충돌 시 소멸
+          for (const roof of game.roofs) {
+            if (g.x >= roof.x && g.x <= roof.x + roof.w && g.y >= roof.y) {
+              g.active = false;
+              // 눈 튀는 효과
+              for (let s = 0; s < 4; s++) {
+                game.particles.push(new Particle(g.x, roof.y, (Math.random() - 0.5) * 2, -Math.random() * 2, '#fff', 2.5, 15, 'smoke'));
+              }
+              break;
+            }
+          }
+
+          if (g.y > 460 || !g.active) {
+            game.gifts.splice(i, 1);
+          }
+        }
+
+        // 장애물 충돌 검사
+        for (const obs of game.obstacles) {
+          const hit = (
+            game.dog.x + game.dog.w * 0.7 > obs.x &&
+            game.dog.x + game.dog.w * 0.3 < obs.x + obs.w &&
+            game.dog.y + game.dog.h > obs.y + 6 &&
+            game.dog.y < obs.y + obs.h
+          );
+          if (hit) {
+            game.takeDamage();
+            break;
+          }
+        }
+
+        // 아이템 획득 검사
+        for (let i = game.pickups.length - 1; i >= 0; i--) {
+          const p = game.pickups[i];
+          const hit = (
+            game.dog.x + game.dog.w > p.x &&
+            game.dog.x < p.x + p.w &&
+            game.dog.y + game.dog.h > p.y &&
+            game.dog.y < p.y + p.h
+          );
+          if (hit) {
+            if (game.lives < 3) game.lives++;
+            game.score += 100;
+            sound.playHeal();
+            game.floatTexts.push(new FloatText('❤️ 체력 회복!', p.x, p.y - 15, '#ff5e7e', 18));
+            for (let k = 0; k < 12; k++) {
+              game.particles.push(new Particle(p.x, p.y, (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4, '#ff5e7e', 3.5, 25, 'heart'));
+            }
+            game.pickups.splice(i, 1);
+          }
+        }
+
+        game.updateHUD();
+      }
+
+      // 파티클 & 플로팅 텍스트 업데이트
+      for (let i = game.particles.length - 1; i >= 0; i--) {
+        game.particles[i].update();
+        if (game.particles[i].life <= 0) game.particles.splice(i, 1);
+      }
+      for (let i = game.floatTexts.length - 1; i >= 0; i--) {
+        game.floatTexts[i].update();
+        if (game.floatTexts[i].life <= 0) game.floatTexts.splice(i, 1);
+      }
+
+      // 눈송이 업데이트
+      for (const s of snowflakes) {
+        s.y += s.speedY;
+        s.x += s.speedX - (game.state === 'PLAY' ? game.speed * 0.15 : 0.3);
+        if (s.y > 450) { s.y = -5; s.x = Math.random() * 800; }
+        if (s.x < 0) s.x = 800;
+      }
+
+      // ================= 렌더링 =================
+      ctx.clearRect(0, 0, 800, 450);
+
+      // 1. 크리스마스 밤하늘 배경
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, 450);
+      skyGrad.addColorStop(0, '#0a1026');
+      skyGrad.addColorStop(0.65, '#121e3d');
+      skyGrad.addColorStop(1, '#1b2c56');
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, 800, 450);
+
+      // 별빛 배경
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      for (let i = 0; i < 40; i++) {
+        const sx = (i * 97 + (game.distance * 0.05)) % 800;
+        const sy = (i * 47) % 200;
+        ctx.fillRect(sx, sy, (i % 3 === 0 ? 2 : 1), (i % 3 === 0 ? 2 : 1));
+      }
+
+      // 밝고 포근한 보름달
+      ctx.save();
+      const moonX = 680;
+      const moonY = 85;
+      const moonGlow = ctx.createRadialGradient(moonX, moonY, 15, moonX, moonY, 65);
+      moonGlow.addColorStop(0, 'rgba(255, 248, 220, 0.85)');
+      moonGlow.addColorStop(0.4, 'rgba(255, 235, 180, 0.25)');
+      moonGlow.addColorStop(1, 'rgba(255, 235, 180, 0)');
+      ctx.fillStyle = moonGlow;
+      ctx.beginPath();
+      ctx.arc(moonX, moonY, 65, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#fff9e6';
+      ctx.beginPath();
+      ctx.arc(moonX, moonY, 26, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // 2. 원경 침엽수림 실루엣 (크리스마스 트리 숲)
+      ctx.fillStyle = '#0a142c';
+      for (let i = 0; i < 18; i++) {
+        const tx = ((i * 55 - (game.distance * 0.2)) % 880) - 40;
+        ctx.beginPath();
+        ctx.moveTo(tx, 340);
+        ctx.lineTo(tx + 25, 240);
+        ctx.lineTo(tx + 50, 340);
+        ctx.fill();
+      }
+
+      // 3. 지붕들 그리기
+      for (const roof of game.roofs) {
+        // 지붕 벽면
+        ctx.fillStyle = '#17223b';
+        ctx.fillRect(roof.x, roof.y, roof.w, roof.h);
+
+        // 지붕 경사 삼각형 & 눈 덮인 슬로프
+        ctx.fillStyle = '#223254';
+        ctx.fillRect(roof.x, roof.y, roof.w, 14);
+
+        // 소복이 쌓인 하얀 눈
+        ctx.fillStyle = '#f0f4f8';
+        ctx.beginPath();
+        ctx.roundRect(roof.x - 4, roof.y - 6, roof.w + 8, 12, 6);
+        ctx.fill();
+
+        // 지붕 장식 전구 (반짝반짝 크리스마스 라이트)
+        const bulbColors = ['#ff5964', '#f7d070', '#35a7ff', '#38b000'];
+        for (let bx = roof.x + 12; bx < roof.x + roof.w - 12; bx += 22) {
+          const colorIdx = Math.floor((bx + Date.now() * 0.003) / 22) % bulbColors.length;
+          ctx.fillStyle = bulbColors[Math.abs(colorIdx)];
+          ctx.beginPath();
+          ctx.arc(bx, roof.y + 10, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // 4. 굴뚝 그리기
+      for (const chim of game.chimneys) {
+        drawChimney(ctx, chim);
+      }
+
+      // 5. 장애물 그리기 (눈사람)
+      for (const obs of game.obstacles) {
+        drawSnowman(ctx, obs.x, obs.y);
+      }
+
+      // 6. 아이템 그리기 (지팡이 사탕)
+      for (const p of game.pickups) {
+        p.bob += 0.05;
+        const bobY = p.y + Math.sin(p.bob) * 5;
+        ctx.save();
+        ctx.translate(p.x, bobY);
+        // 하트 캔디
+        ctx.fillStyle = '#ff4d6d';
+        ctx.beginPath();
+        ctx.arc(6, 6, 7, 0, Math.PI * 2);
+        ctx.arc(16, 6, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(0, 8);
+        ctx.lineTo(11, 20);
+        ctx.lineTo(22, 8);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 7. 선물 투하 객체들
+      for (const g of game.gifts) {
+        g.draw(ctx);
+      }
+
+      // 8. 파티클
+      for (const p of game.particles) {
+        p.draw(ctx);
+      }
+
+      // 9. 주인공 치와와 그리기
+      drawChihuahua(
+        ctx,
+        game.dog.x,
+        game.dog.y,
+        game.dog.frame,
+        game.invulnerable,
+        !game.dog.grounded
+      );
+
+      // 10. 눈 내리는 효과 (전경)
+      for (const s of snowflakes) {
+        ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity})`;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 11. 플로팅 텍스트
+      for (const ft of game.floatTexts) {
+        ft.draw(ctx);
+      }
+
+      // 12. UI 오버레이 (START 또는 GAMEOVER)
+      if (game.state === 'START') {
+        ctx.fillStyle = 'rgba(6, 10, 24, 0.78)';
+        ctx.fillRect(0, 0, 800, 450);
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#ffccd5';
+        ctx.font = 'bold 34px -apple-system, sans-serif';
+        ctx.fillText('🎄 산타 치와와의 크리스마스 배달 작전! 🐾', 400, 160);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '18px -apple-system, sans-serif';
+        ctx.fillText('귀여운 치와와가 지붕 위를 달리며 선물을 배달해요!', 400, 210);
+
+        ctx.font = '15px -apple-system, sans-serif';
+        ctx.fillStyle = '#ffd166';
+        ctx.fillText('🎮 Space/↑ 점프 (2단 점프 가능!) | ↓/D 키 또는 버튼으로 선물 투하', 400, 250);
+        ctx.fillText('굴뚝 속에 선물을 골인시켜 아이들에게 기쁨을 선물하세요!', 400, 280);
+
+        // 시작 버튼 안내
+        ctx.fillStyle = '#e63946';
+        ctx.beginPath();
+        ctx.roundRect(280, 320, 240, 52, 26);
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 20px -apple-system, sans-serif';
+        ctx.fillText('🎁 게임 시작하기 (클릭)', 400, 353);
+      } else if (game.state === 'GAMEOVER') {
+        ctx.fillStyle = 'rgba(6, 10, 24, 0.82)';
+        ctx.fillRect(0, 0, 800, 450);
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#ff5e7e';
+        ctx.font = 'bold 36px -apple-system, sans-serif';
+        ctx.fillText('❄️ 배달 완료! 수고했어 치와와! 🐾', 400, 150);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '20px -apple-system, sans-serif';
+        ctx.fillText(`최종 점수: ${Math.floor(game.score)} 점`, 400, 205);
+        ctx.fillText(`배달 성공: ${game.deliveries} 개 🎁`, 400, 240);
+
+        ctx.fillStyle = '#ffd166';
+        ctx.font = '16px -apple-system, sans-serif';
+        ctx.fillText(`🏆 최고 기록: ${game.bestScore} 점`, 400, 275);
+
+        // 다시 하기 버튼
+        ctx.fillStyle = '#2a9d8f';
+        ctx.beginPath();
+        ctx.roundRect(280, 315, 240, 52, 26);
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 20px -apple-system, sans-serif';
+        ctx.fillText('🔄 다시 도전하기', 400, 348);
+      }
+    }
+
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
