@@ -2,6 +2,8 @@
 
 귀여운 산타 치와와가 눈 내리는 성탄절 밤, 지붕 위를 신나게 달리며 착한 아이들의 집 굴뚝으로 선물을 배달하는 횡스크롤 아케이드 웹 게임입니다.
 
+🌐 **웹에서 바로 플레이하기**: [https://ddikui.github.io/chihuahua-christmas-delivery/](https://ddikui.github.io/chihuahua-christmas-delivery/)
+
 ---
 
 ## 🎮 게임 특징
